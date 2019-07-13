@@ -37,13 +37,13 @@ net.store()
 
 inp = 0.15
 noise_amp = 0.1 #max noise percentage of inp
-noise_test = 0.8
+noise_test = 0.4*np.sqrt(3)
 
 num_odors = 10
 
 num_train = 1
 
-num_test = 2
+num_test = 4
 
 run_time = 80*ms
 
@@ -78,19 +78,23 @@ run_params_test = dict( num_odors = num_odors,
                         N_AL = N_AL,
                         train = False)
 
-# ex.createData(run_params_train, I_arr, states, net)
-# ex.createData(run_params_test, I_arr, states, net)
+ex.createData(run_params_train, I_arr, states, net)
+ex.createData(run_params_test, I_arr, states, net)
 
 spikes_t_arr, spikes_i_arr, I_arr, trace_V_arr, trace_t_arr, label_arr = anal.load_data(tr_prefix, num_runs = num_odors*num_train)
 spikes_t_test_arr, spikes_i_test_arr, I_test_arr, test_V_arr, test_t_arr, label_test_arr = anal.load_data(te_prefix, num_runs = num_odors*num_test)
 
 
-pca_dim = 20
-pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
+#uncomment these lines to do PCA on the output
+# pca_dim = 20
+# pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
 
-print(pca_arr[0])
+# print(pca_arr[0])
 
-X = np.hstack(pca_arr).T
+# X = np.hstack(pca_arr).T
+X = np.hstack(trace_V_arr).T
+
+
 mini = np.min(X)
 maxi = np.max(X)
 X = anal.normalize(X, mini, maxi)
@@ -98,7 +102,8 @@ y = np.hstack(label_arr)
 
 clf = anal.learnSVM(X, y)
 
-test_data = anal.applyPCA(PCA, test_V_arr)
+# test_data = anal.applyPCA(PCA, test_V_arr)
+test_data = test_V_arr
 test_data = anal.normalize(test_data, mini, maxi)
 
 y_test = np.mean(label_test_arr, axis = 1)
@@ -119,9 +124,11 @@ print("Classification report for classifier %s:\n%s\n"
 cm = metrics.confusion_matrix(expected, predicted)
 print("Confusion matrix:\n%s" % cm)
 
-# anal.plot_confusion_matrix(cm)
-
 print("Accuracy={}".format(metrics.accuracy_score(expected, predicted)))
+
+
+# Only works if pca_dim = 2
+
 
 # title = 'Arbitrary Input Training'
 # name = 'training.pdf'
