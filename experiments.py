@@ -59,9 +59,11 @@ def runMNIST(run_params, imgs, states, net):
     spikes_AL = states['spikes_AL']
     trace_AL = states['trace_AL']
 
-    num_run = np.zeros(len(numbers_to_inc))
+    num_run = {}
+    for i in numbers_to_inc:
+        num_run[i] = 0
 
-    start = 330
+    start = 100
     #run the network
     n = 0
     for i in range(60000):
@@ -95,8 +97,10 @@ def runMNIST(run_params, imgs, states, net):
             np.save(prefix+'labels_'+str(n), np.ones(len(trace_AL.t[start:]))*y)
             n = n+1
             num_run[y] = num_run[y]+1
-        if np.all(num_run == num_train):
+        if all(value == num_train for value in num_run.values()):
             break
+
+
 '''
 Random constant current input
 N: size of array

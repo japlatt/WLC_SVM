@@ -4,6 +4,7 @@ import neuron_models as nm
 import lab_manager as lm
 import experiments as ex
 import analysis as anal
+from scipy import stats
 
 import matplotlib.pyplot as plt
 from sklearn import metrics
@@ -43,7 +44,7 @@ num_odors = 10
 
 num_train = 1
 
-num_test = 4
+num_test = 5
 
 run_time = 80*ms
 
@@ -111,7 +112,7 @@ y_test = np.mean(label_test_arr, axis = 1)
 pred_arr = []
 for i in range(len(test_data)):
     pred = clf.predict(test_data[i].T)
-    total_pred = np.rint(np.mean(pred))
+    total_pred = stats.mode(pred)[0]
     print('True: ' + str(y_test[i]), 'pred: ' + str(int(total_pred)))
     pred_arr.append(total_pred)
 
