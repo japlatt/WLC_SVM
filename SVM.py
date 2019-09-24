@@ -11,7 +11,7 @@ from sklearn import metrics
 
 defaultclock.dt = .05*ms
 
-np.random.seed(22)
+np.random.seed(125)
 
 N_AL = 1000
 in_AL = .1
@@ -37,21 +37,21 @@ G_AL, S_AL, trace_AL, spikes_AL = lm.get_AL(al_para, net)
 net.store()
 
 inp = 0.15
-noise_amp = 0.1 #max noise percentage of inp
-noise_test = 0.4*np.sqrt(3)
+noise_amp = 0.0 #max noise percentage of inp
+noise_test = 2.0*np.sqrt(3)
 
-num_odors = 10
+num_odors = 2
 
 num_train = 1
 
-num_test = 5
+num_test = 1
 
-run_time = 80*ms
+run_time = 120*ms
 
 I_arr = []
 #create the base odors
 for i in range(num_odors):
-    I = ex.get_rand_I(N_AL, p = np.random.uniform(0.1, 0.5), I_inp = inp)*nA
+    I = ex.get_rand_I(N_AL, p = 0.33, I_inp = inp)*nA
     I_arr.append(I)
 
 run_params_train = dict(num_odors = num_odors,
@@ -87,24 +87,25 @@ spikes_t_test_arr, spikes_i_test_arr, I_test_arr, test_V_arr, test_t_arr, label_
 
 
 #uncomment these lines to do PCA on the output
-# pca_dim = 20
-# pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
+pca_dim = 2
+pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
 
-# print(pca_arr[0])
-
-# X = np.hstack(pca_arr).T
-X = np.hstack(trace_V_arr).T
+X = np.hstack(pca_arr).T
+# X = np.hstack(trace_V_arr).T
 
 
 mini = np.min(X)
 maxi = np.max(X)
 X = anal.normalize(X, mini, maxi)
+
+pca_arr = anal.normalize(pca_arr, mini, maxi)
+
 y = np.hstack(label_arr)
 
 clf = anal.learnSVM(X, y)
 
-# test_data = anal.applyPCA(PCA, test_V_arr)
-test_data = test_V_arr
+test_data = anal.applyPCA(PCA, test_V_arr)
+# test_data = test_V_arr
 test_data = anal.normalize(test_data, mini, maxi)
 
 y_test = np.mean(label_test_arr, axis = 1)
@@ -134,12 +135,24 @@ print("Accuracy={}".format(metrics.accuracy_score(expected, predicted)))
 # title = 'Arbitrary Input Training'
 # name = 'training.pdf'
 # anal.plotPCA2D(pca_arr, title, name, num_train, skip = 2)
-# title = 'Arbitrary Input Training Boundary'
-# name = 'boundary_AI.pdf'
-# anal.plotSVM(clf, X, y, title, name)
-# title = 'Testing Arbitrary Input with Noise ' + str(np.rint(100*noise_test/sqrt(3)))+'%'
-# name = 'testing_AI.pdf'
-# anal.plotSVM(clf, test_data, label_test_arr, title, name)
+title = 'Training Boundary'
+name = tr_prefix+'boundary_AI.pdf'
+anal.plotSVM(clf, X, y, title, name)
+title = 'Testing Input with Noise ' + str(np.rint(100*noise_test/sqrt(3)))+'%'
+name = tr_prefix+'testing_AI.pdf'
+anal.plotSVM(clf, test_data, label_test_arr, title, name)
+
+#save text files for sending to Henry
+c = 0
+for i in range(num_odors):
+    for j in range(num_train):
+        np.savetxt(tr_prefix+'Train_SVM2D_%d%d.dat'%(i, j),
+                   np.append(pca_arr[c].T, np.reshape(label_arr[c], (-1,1)), 1),
+                   fmt = '%1.3f') 
+        np.savetxt(tr_prefix+'Test_SVM2D_%d%d.dat'%(i, j),
+                   np.append(test_data[c].T, np.reshape(clf.predict(test_data[c].T), (-1,1)), 1),
+                   fmt = '%1.3f') 
+        c = c+1
 
 
 

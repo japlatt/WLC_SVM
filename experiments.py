@@ -6,7 +6,7 @@ import brian2.only as br
 from sklearn.utils import shuffle as rshuffle
 
 
-def createData(run_params, I_arr, states, net):
+def createData(run_params, I_arr, states, net, start = 100):
     num_odors = run_params['num_odors']
     num_trials = run_params['num_trials']
     prefix = run_params['prefix']
@@ -21,7 +21,7 @@ def createData(run_params, I_arr, states, net):
     trace_AL = states['trace_AL']
 
     n = 0 #Counting index
-    start = 100 #skip the first start*dt ms to remove transients
+
     for j in range(num_odors):
         for k in range(num_trials):
             noise = noise_amp#*np.random.randn()
@@ -74,7 +74,7 @@ def runMNIST(run_params, imgs, states, net):
             print('label: '+ str(labels[i][0]))
             
             #right now creating binary image
-            rates = rates = np.where(imgs[i%60000,:,:] > bin_thresh, 1, 0)*inp
+            rates = np.where(imgs[i%60000,:,:] > bin_thresh, 1, 0)*inp
 
             linear = np.ravel(rates)
             padding = N_AL - n_input
@@ -101,6 +101,30 @@ def runMNIST(run_params, imgs, states, net):
             break
 
 
+'''
+returns balanced binary MNIST datasets for num_train objects per class
+'''
+def get_bin_MNIST(imgs, labels, num_train, bin_thresh):
+
+    X_train = []
+    y_train = []
+
+    num_run = {}
+    for i in range(10):
+        num_run[i] = 0
+    for i in range(60000):
+        y = labels[i][0]
+        if num_run[y] < num_train:
+            rates = np.where(imgs[i%60000,:,:] > bin_thresh, 1, 0)
+            linear = np.ravel(rates)
+            num_run[y] = num_run[y]+1
+            X_train.append(linear)
+            y_train.append(y)
+
+        if all(value == num_train for value in num_run.values()):
+            break
+
+    return [np.array(X_train), np.array(y_train)]
 '''
 Random constant current input
 N: size of array

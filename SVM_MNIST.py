@@ -28,15 +28,15 @@ te_prefix = 'data/test_'
 #doesn't work if timestep > 0.05ms
 defaultclock.dt = .05*ms
 
-numbers_to_inc = frozenset([0, 3])
+numbers_to_inc = frozenset([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 # numbers_to_inc = frozenset([0, 1, 2])
 
 #size of network 
 N_AL = 784 #must be >= 784
 
 num_odors = len(numbers_to_inc)
-num_train = 1
-num_test = 1
+num_train = 17
+num_test = 10
 """
 Amount of inhibition between AL Neurons.
 Enforces WLC dynamics and needs to be scaled
@@ -48,7 +48,7 @@ in_AL = 0.2
 PAL = 0.5
 
 input_intensity = 0.2 #scale input
-time_per_image = 100 #ms
+time_per_image = 80 #ms
 
 bin_thresh = 100 #threshold for binary
 
@@ -129,8 +129,8 @@ run_params_test = dict( num_trials = num_test,
                         n_input = n_input,
                         )
 
-ex.runMNIST(run_params_train, imgs_train, states, net)
-ex.runMNIST(run_params_test, imgs_test, states, net)
+# ex.runMNIST(run_params_train, imgs_train, states, net)
+# ex.runMNIST(run_params_test, imgs_test, states, net)
 
 #---------------------------------------------------------
 
@@ -138,13 +138,13 @@ spikes_t_arr, spikes_i_arr, I_arr, trace_V_arr, trace_t_arr, label_arr = anal.lo
 spikes_t_test_arr, spikes_i_test_arr, I_test_arr, test_V_arr, test_t_arr, label_test_arr = anal.load_data(te_prefix, num_runs = num_odors*num_test)
 
 
-skip = 4
+skip = 5
 #uncomment these lines to do PCA on the output
-pca_dim = 2
-pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
+# pca_dim = 2
+# pca_arr, PCA = anal.doPCA(trace_V_arr, k = pca_dim)
 
-X = np.hstack(pca_arr).T
-# X = np.hstack(trace_V_arr).T
+# X = np.hstack(pca_arr).T
+X = np.hstack(trace_V_arr).T
 
 
 mini = np.min(X)
@@ -159,8 +159,8 @@ clf = anal.learnSVM(X, y, K = 'linear')
 
 #--------------------------------------------------------
 
-test_data = anal.applyPCA(PCA, test_V_arr)
-# test_data = test_V_arr
+# test_data = anal.applyPCA(PCA, test_V_arr)
+test_data = test_V_arr
 test_data = anal.normalize(test_data, mini, maxi)
 
 y_test = np.mean(label_test_arr, axis = 1)
@@ -184,10 +184,10 @@ print("Confusion matrix:\n%s" % cm)
 
 print("Accuracy={}".format(metrics.accuracy_score(expected, predicted)))
 
-title = 'Training Data Boundary'
-name = 'boundary.pdf'
-anal.plotSVM(clf, X, y, title, name)
-title = 'Testing MNIST'
-name = 'testing.pdf'
-anal.plotSVM(clf, test_data, label_test_arr, title, name)
+# title = 'Training Data Boundary'
+# name = 'boundary.pdf'
+# anal.plotSVM(clf, X, y, title, name)
+# title = 'Testing MNIST'
+# name = 'testing.pdf'
+# anal.plotSVM(clf, test_data, label_test_arr, title, name)
 
