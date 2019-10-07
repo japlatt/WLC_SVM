@@ -129,8 +129,8 @@ run_params_test = dict( num_trials = num_test,
                         n_input = n_input,
                         )
 
-# ex.runMNIST(run_params_train, imgs_train, states, net)
-# ex.runMNIST(run_params_test, imgs_test, states, net)
+ex.runMNIST(run_params_train, imgs_train, states, net)
+ex.runMNIST(run_params_test, imgs_test, states, net)
 
 #---------------------------------------------------------
 
