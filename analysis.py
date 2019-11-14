@@ -31,7 +31,7 @@ def load_data(prefix, num_runs):
 
 def doPCA(trace_V_arr, k = 3):
 
-    n, num_neurons, length = np.shape(trace_V_arr)
+    n, _, length = np.shape(trace_V_arr)
 
     #concatenate data
     data = np.hstack(trace_V_arr)
@@ -50,7 +50,7 @@ def doPCA(trace_V_arr, k = 3):
     return pca_arr, pca
 
 def applyPCA(PCA, data):
-    n, num_neurons, length = np.shape(data)
+    n, _, length = np.shape(data)
     data = np.hstack(data)
 
     Xk = PCA.transform(data.T)
@@ -76,7 +76,7 @@ def normalize(X, minim, maxim):
     return (X-minim)/(maxim - minim)
 
 def plotSVM(clf, X, Y, title, name):
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
 
     # create a mesh to plot in
     x_min, x_max = X[:, 0].min()-.1, X[:, 0].max()+.1
@@ -228,35 +228,6 @@ def doInCA(MIM, trace_V_arr, skip, k = 3):
 
     return inca_arr
 
-def plotInCA(InCAData, N, start = 400):
-    # cycol = cycle(['#f10c45','#069af3','#02590f','#ab33ff','#ff8c00','#ffd700'])
-    # marker = cycle(['^','o','s','p'])
-
-    fig = plt.figure(figsize = (10,7))
-    ax = fig.gca(projection='3d')
-    # c = next(cycol)
-    # m = next(marker)
-
-    # Turn off tick labels
-    ax.set_yticklabels([])
-    ax.set_xticklabels([])
-    ax.set_zticklabels([])
-
-    ax.grid(False)
-
-    name = [inca1, inca2, inca3]
-    for j in range(3):
-        ax.scatter(name[j][start:,0], name[j][start:,1], name[j][start:,2],
-                   s=10)#, 
-                   # color = c,
-                   # marker = m)
-        # c = next(cycol)
-        # m = next(marker)
-
-    plt.title('InCA ' + str(N) + ' HH neuron', fontsize = 22)
-    ax.view_init(0, 0)
-    # plt.tight_layout()
-    ax.figure.savefig('InCA_' + str(N) + '.pdf', bbox_inches = 'tight')
 
 def calc_MI(X, Y, bins):
     c_xy = np.histogram2d(X, Y, bins)[0]
