@@ -62,11 +62,11 @@ def applyPCA(PCA, data):
     return pca_arr
 
 
-def learnSVM(X, y, K = 'linear'):
+def learnSVM(X, y, K = 'linear', v = True):
     if K == 'linear':
-        clf = LinearSVC(C = 0.4, max_iter=100000, verbose = True)
+        clf = LinearSVC(C = 0.4, max_iter=100000, verbose = v)
     else:
-        clf = SVC(kernel=K, verbose = True, C = 0.6, gamma = 8.0)  
+        clf = SVC(kernel=K, verbose = v, C = 0.6, gamma = 8.0)  
     
     clf.fit(X, y)
 
@@ -104,13 +104,14 @@ def plotSVM(clf, X, Y, title, name):
 
 def plotPCA2D(pca_arr, title, name, num_trials, skip = 1):
     marker = cycle(['^','o','s','p'])
-    cycol = cycle(['y', 'b', 'r'])
+    cycol = cycle(['y', 'b', 'r', 'k', 'c'])
     m = next(marker)
     c = next(cycol)
 
     for i in range(len(pca_arr)):
         d = pca_arr[i]
         m = next(marker)
+        c = next(cycol)
         if i%num_trials != 0:
             plt.plot(d[0][::skip], d[1][::skip],
              		 '.',
@@ -139,14 +140,14 @@ def plotPCA2D(pca_arr, title, name, num_trials, skip = 1):
 
 def plotPCA3D(PCAdata, N, title, name, el = 30, az = 30, skip = 1, start = 0):
 
-    # cycol = cycle(['#f10c45','#069af3','#02590f','#ab33ff','#ff8c00','#ffd700'])
-    # marker = cycle(['^','o','s','p'])
+    cycol = cycle(['#f10c45','#069af3','#02590f','#ab33ff','#ff8c00','#ffd700'])
+    marker = cycle(['^','o','s','p'])
 
 
     fig = plt.figure(figsize = (10,7))
     ax = fig.gca(projection='3d')
-    # c = next(cycol)
-    # m = next(marker)
+    c = next(cycol)
+    m = next(marker)
 
     # Turn off tick labels
     ax.set_yticklabels([])
@@ -159,13 +160,16 @@ def plotPCA3D(PCAdata, N, title, name, el = 30, az = 30, skip = 1, start = 0):
         ax.scatter(PCAdata[j][0, start:][::skip],
                    PCAdata[j][1, start:][::skip],
                    PCAdata[j][2, start:][::skip],
-                   s=10)
-        # c = next(cycol)
-        # m = next(marker)
+                   s=10,
+                   color = c,
+                   marker = m)
+        c = next(cycol)
+        m = next(marker)
 
     plt.title(title, fontsize = 22)
     ax.view_init(elev = el, azim = az)
     ax.figure.savefig(name, bbox_inches = 'tight')
+    plt.show()
 
 
 def plot_confusion_matrix(cm, title='Confusion matrix', cmap=plt.cm.Blues):
@@ -198,7 +202,7 @@ def getMIM(prefix, trace_V_arr):
     matMI = np.zeros((N, N))
 
     for ix in np.arange(N):
-        if ix%10 == 0: print(ix)
+        if ix%100 == 0: print(str(ix/100.) +'%')
         for jx in np.arange(ix,N):
             matMI[ix,jx] = calc_MI(data[:,ix], data[:,jx], bins)
             #symmetric matrix
@@ -224,35 +228,35 @@ def doInCA(MIM, trace_V_arr, skip, k = 3):
 
     return inca_arr
 
-# def plotInCA(InCAData, N, start = 400):
-#     # cycol = cycle(['#f10c45','#069af3','#02590f','#ab33ff','#ff8c00','#ffd700'])
-#     # marker = cycle(['^','o','s','p'])
+def plotInCA(InCAData, N, start = 400):
+    # cycol = cycle(['#f10c45','#069af3','#02590f','#ab33ff','#ff8c00','#ffd700'])
+    # marker = cycle(['^','o','s','p'])
 
-#     fig = plt.figure(figsize = (10,7))
-#     ax = fig.gca(projection='3d')
-#     # c = next(cycol)
-#     # m = next(marker)
+    fig = plt.figure(figsize = (10,7))
+    ax = fig.gca(projection='3d')
+    # c = next(cycol)
+    # m = next(marker)
 
-#     # Turn off tick labels
-#     ax.set_yticklabels([])
-#     ax.set_xticklabels([])
-#     ax.set_zticklabels([])
+    # Turn off tick labels
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.set_zticklabels([])
 
-#     ax.grid(False)
+    ax.grid(False)
 
-#     name = [inca1, inca2, inca3]
-#     for j in range(3):
-#         ax.scatter(name[j][start:,0], name[j][start:,1], name[j][start:,2],
-#                    s=10)#, 
-#                    # color = c,
-#                    # marker = m)
-#         # c = next(cycol)
-#         # m = next(marker)
+    name = [inca1, inca2, inca3]
+    for j in range(3):
+        ax.scatter(name[j][start:,0], name[j][start:,1], name[j][start:,2],
+                   s=10)#, 
+                   # color = c,
+                   # marker = m)
+        # c = next(cycol)
+        # m = next(marker)
 
-#     plt.title('InCA ' + str(N) + ' HH neuron', fontsize = 22)
-#     ax.view_init(0, 0)
-#     # plt.tight_layout()
-#     ax.figure.savefig('InCA_' + str(N) + '.pdf', bbox_inches = 'tight')
+    plt.title('InCA ' + str(N) + ' HH neuron', fontsize = 22)
+    ax.view_init(0, 0)
+    # plt.tight_layout()
+    ax.figure.savefig('InCA_' + str(N) + '.pdf', bbox_inches = 'tight')
 
 def calc_MI(X, Y, bins):
     c_xy = np.histogram2d(X, Y, bins)[0]

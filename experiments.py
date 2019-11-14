@@ -44,6 +44,59 @@ def createData(run_params, I_arr, states, net, start = 100):
             n = n+1
 
 
+def mixtures2(run_params, mix_arr, states, net, start = 100):
+    assert len(mix_arr) ==2, 'mix_arr must have length 2' 
+
+    num_odors = run_params['num_odors']
+    num_trials = run_params['num_trials']
+    prefix = run_params['prefix']
+    inp = run_params['inp']
+    noise_amp = run_params['noise_amp']
+    run_time = run_params['run_time']
+    N_AL = run_params['N_AL']
+    train = run_params['train']
+
+    G_AL = states['G_AL']
+    spikes_AL = states['spikes_AL']
+    trace_AL = states['trace_AL']
+
+    #I_A = AI_1 + (1-A)I_2
+    eta_arr = np.linspace(0, 1, num_trials)
+
+    n = 0 #Counting index
+    if train:
+        for i in range(num_odors):
+            net.restore()
+            G_AL.I_inj = mix_arr[i]
+            net.run(run_time, report = 'text')
+            np.save(prefix+'spikes_t_'+str(n) ,spikes_AL.t)
+            np.save(prefix+'spikes_i_'+str(n) ,spikes_AL.i)
+            np.save(prefix+'I_'+str(n), G_AL.I_inj)
+            np.save(prefix+'trace_V_'+str(n), trace_AL.V[:,start:])
+            np.save(prefix+'trace_t_'+str(n), trace_AL.t[start:])
+
+            np.save(prefix+'labels_'+str(n), np.ones(len(trace_AL.t[start:]))*i)
+            n = n+1
+    else:
+        for k in range(num_trials):
+            noise = noise_amp #*np.random.randn()
+            net.restore()
+
+            I = (1-eta_arr[k])*mix_arr[0]+eta_arr[k]*mix_arr[1]
+            G_AL.I_inj = I+noise*inp*(2*np.random.random(N_AL)-1)*br.nA
+
+            net.run(run_time, report = 'text')
+
+            np.save(prefix+'spikes_t_'+str(n) ,spikes_AL.t)
+            np.save(prefix+'spikes_i_'+str(n) ,spikes_AL.i)
+            np.save(prefix+'I_'+str(n), G_AL.I_inj)
+            np.save(prefix+'trace_V_'+str(n), trace_AL.V[:,start:])
+            np.save(prefix+'trace_t_'+str(n), trace_AL.t[start:])
+
+            lab = 0
+            np.save(prefix+'labels_'+str(n), np.ones(len(trace_AL.t[start:]))*lab)
+            n = n+1
+
 def runMNIST(run_params, imgs, states, net):
     num_train = run_params['num_trials']
     prefix = run_params['prefix']
